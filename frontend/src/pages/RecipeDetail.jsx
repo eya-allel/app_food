@@ -17,7 +17,9 @@ export default function RecipeDetail() {
       try {
         setLoading(true);
         const response = await fetchRecipe(id);
-        setRecipe(response.data);
+        console.log('Raw API response:', response);
+        // Fix: Make sure to access the correct data structure
+        setRecipe(response.data.data);
         setError(null);
       } catch (err) {
         setError('Failed to load recipe details.');
@@ -49,10 +51,9 @@ export default function RecipeDetail() {
   const handleImageLoad = () => {
     setImageLoaded(true);
   };
-  console.log(recipe);
-  console.log(RecipeDetail);
-
-
+  
+  // Improved logging to debug
+  console.log('Recipe data received:', recipe);
 
   if (loading) {
     return (
@@ -156,7 +157,9 @@ export default function RecipeDetail() {
               <h2 className="text-2xl font-semibold text-gray-800">Description</h2>
             </div>
             <div className="bg-amber-50 p-4 rounded-lg border-l-4 border-amber-400">
-              <p className="text-gray-700 leading-relaxed">{recipe.description || "No description provided."}</p>
+              <p className="text-gray-700 leading-relaxed">
+                {recipe && recipe.description ? recipe.description : "No description provided."}
+              </p>
             </div>
           </div>
 
@@ -168,7 +171,7 @@ export default function RecipeDetail() {
               <FiList className="ml-2 text-amber-500" size={20} />
             </div>
             <div className="bg-gray-50 p-6 rounded-lg">
-              {recipe.ingredients && recipe.ingredients.length > 0 ? (
+              {recipe && recipe.ingredients && recipe.ingredients.length > 0 ? (
                 <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {recipe.ingredients.map((ingredient, index) => (
                     <li key={index} className="flex items-start text-gray-700">

@@ -16,6 +16,24 @@ api.interceptors.request.use(config => {
   return config;
 });
 
+// Ajouter des intercepteurs de réponse pour le débogage
+api.interceptors.response.use(
+  response => {
+    console.log('API Response structure:', {
+      status: response.status,
+      headers: response.headers,
+      data: response.data,
+      url: response.config.url,
+      method: response.config.method
+    });
+    return response;
+  },
+  error => {
+    console.error('API Error:', error);
+    return Promise.reject(error);
+  }
+);
+
 // Fonctions simples
 export const fetchRecipes = () => api.get('/recipes');
 export const fetchRecipe = (id) => api.get(`/recipes/${id}`);
