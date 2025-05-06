@@ -1,6 +1,6 @@
 const User = require('../models/User');
 const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken'); // On va générer un JWT pour la session utilisateur
+const jwt = require('jsonwebtoken');
 
 // Fonction pour l'inscription
 exports.register = async (req, res) => {
@@ -70,4 +70,57 @@ exports.login = async (req, res) => {
     console.error('Error in login:', error);
     res.status(500).json({ message: 'Server error.' });
   }
+};
+
+// Middleware pour protéger les routes (vérification du token)
+exports.protect = async (req, res, next) => {
+  try {
+    // 1) Vérifier si le token est présent
+    let token;
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+      token = req.headers.authorization.split(' ')[1];
+    }
+
+    if (!token) {
+      return res.status(401).json({
+        status: 'fail',
+        message: 'Vous n\'êtes pas connecté. Veuillez vous connecter pour accéder à cette ressource.'
+      });
+    }
+
+    // 2) Vérification du token
+    const decoded = jwt.verify(token, 'your-secret-key');
+
+    // 3) Vérifier si l'utilisateur existe toujours
+    const currentUser = await User.findById(decoded.userId);
+    if (!currentUser) {
+      return res.status(401).json({
+        status: 'fail',
+        message: 'L\'utilisateur associé à ce token n\'existe plus.'
+      });
+    }
+
+    // Ajouter l'utilisateur à l'objet request
+    req.user = currentUser;
+    next();
+  } catch (error) {
+    return res.status(401).json({
+      status: 'fail',
+      message: 'Token invalide ou expiré'
+    });
+  }
+};
+
+// Middleware pour restreindre l'accès selon le rôle
+exports.restrictTo = (...roles) => {
+  return (req, res, next) => {
+    // Vérifie si le rôle de l'utilisateur est inclus dans les rôles autorisés
+    if (!roles.includes(req.user.role)) {
+      return res.status(403).json({
+        status: 'fail',
+        message: 'Vous n\'avez pas la permission d\'effectuer cette action'
+      });
+    }
+    next();
+  };
 };

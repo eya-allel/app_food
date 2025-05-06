@@ -26,6 +26,25 @@ export default function Navbar() {
     navigate('/');
   };
 
+  // Determine which navigation links to show based on user role
+  const getNavLinks = () => {
+    if (currentUser && currentUser.role === 'caterer') {
+      return [
+        { name: "Recipes", path: "/recipes" },
+        { name: "My Recipes", path: "/my-recipes" },
+        { name: "Orders", path: "/caterer-orders" }
+      ];
+    } else {
+      return [
+        { name: "Recipes", path: "/recipes" },
+        { name: "Order Food", path: "/order-food" },
+        { name: "Caterers", path: "/caterers" }
+      ];
+    }
+  };
+
+  const navLinks = getNavLinks();
+
   return (
     <header className="bg-white border-b sticky top-0 z-50">
       <div className="container mx-auto px-4 py-3">
@@ -43,12 +62,16 @@ export default function Navbar() {
             </span>
           </div>
 
-          {/* Navigation Links */}
+          {/* Navigation Links - Now Dynamic Based on User Role */}
           <nav className="hidden md:flex space-x-8">
-            {["Recipes", "Order Food", "Caterers"].map((item, idx) => (
-              <a key={idx} href="#" className="text-lg font-medium text-gray-700 hover:text-amber-600 
-                          transition-all duration-300 relative group">
-                {item}
+            {navLinks.map((item, idx) => (
+              <a 
+                key={idx} 
+                onClick={() => navigate(item.path)} 
+                className="text-lg font-medium text-gray-700 hover:text-amber-600 
+                          transition-all duration-300 relative group cursor-pointer"
+              >
+                {item.name}
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 
                                bg-amber-500 transition-all duration-300 group-hover:w-full"></span>
               </a>
@@ -62,11 +85,14 @@ export default function Navbar() {
               <span className="absolute -bottom-1 left-1/2 w-0 h-0.5 bg-amber-500 transform -translate-x-1/2 transition-all duration-300 group-hover:w-4/5"></span>
             </button>
 
-            <button className="p-2 group relative">
-              <FiShoppingCart className="text-xl text-gray-500 group-hover:text-amber-600 transition-colors duration-300" />
-              <span className="absolute -top-1 -right-1 bg-amber-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">3</span>
-              <span className="absolute -bottom-1 left-1/2 w-0 h-0.5 bg-amber-500 transform -translate-x-1/2 transition-all duration-300 group-hover:w-4/5"></span>
-            </button>
+            {/* Only show shopping cart for regular users */}
+            {(!currentUser || currentUser.role !== 'caterer') && (
+              <button className="p-2 group relative">
+                <FiShoppingCart className="text-xl text-gray-500 group-hover:text-amber-600 transition-colors duration-300" />
+                <span className="absolute -top-1 -right-1 bg-amber-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">3</span>
+                <span className="absolute -bottom-1 left-1/2 w-0 h-0.5 bg-amber-500 transform -translate-x-1/2 transition-all duration-300 group-hover:w-4/5"></span>
+              </button>
+            )}
 
             <button onClick={toggleAuthMenu} className="p-2 group relative">
               <FiUser className="text-xl text-gray-500 group-hover:text-amber-600 transition-colors duration-300" />
